@@ -72,7 +72,7 @@ async def responder_con_ia(telefono: str, texto: str) -> str:
     guardar_mensaje(telefono, "user", texto)
     mensajes = [{"role": "system", "content": PROMPT_NEGOCIO}] + obtener_historial(telefono)
 
-    async with httpx.AsyncClient(timeout=25.0) as client:
+    async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers={
