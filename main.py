@@ -10,7 +10,7 @@ VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "tacna_secreto_2026")
 WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN", "")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID", "1449633028231445")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-MODELO_IA = os.getenv("MODELO_IA", "google/gemini-2.5-flash")
+MODELO_IA = os.getenv("MODELO_IA", "openrouter/free")
 
 PROMPT_NEGOCIO = """
 Eres el asesor comercial de una tienda de celulares de gama alta en Tacna, Perú.
