@@ -104,4 +104,54 @@ async def responder_con_ia(telefono: str, texto: str) -> str:
 
 async def enviar_whatsapp(destino: str, texto: str):
     url = f"https://graph.facebook.com/v25.0/{PHONE_NUMBER_ID}/messages"
-    async with httpx.AsyncClient(timeout=15.
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        resp = await client.post(
+            url,
+            headers={
+                "Authorization": f"Bearer {WHATSAPP_TOKEN}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "messaging_product": "whatsapp",
+                "to": destino,
+                "type": "text",
+                "text": {"body": texto},
+            },
+        )
+        if resp.status_code >= 400:
+            print("WHATSAPP API ERROR:", resp.status_code, resp.text)
+
+
+@app.get("/")
+async def inicio():
+    return {"estado": "Servidor Jarvis Ventas Tacna activo 24/7"}
+
+
+@app.get("/webhook")
+async def verificar_webhook(
+    hub_mode: str = Query(None, alias="hub.mode"),
+    hub_challenge: str = Query(None, alias="hub.challenge"),
+    hub_verify_token: str = Query(None, alias="hub.verify_token"),
+):
+    if hub_mode == "subscribe" and hub_verify_token == VERIFY_TOKEN:
+        return PlainTextResponse(content=hub_challenge, status_code=200)
+    raise HTTPException(status_code=403, detail="Token inválido")
+
+
+@app.post("/webhook")
+async def recibir_mensaje(request: Request):
+    data = await request.json()
+    try:
+        entry = data["entry"][0]["changes"][0]["value"]
+        if "messages" in entry:
+            msg = entry["messages"][0]
+            telefono = msg["from"]
+            if msg.get("type") == "text":
+                texto_cliente = msg["text"]["body"].strip()
+                respuesta = await responder_con_ia(telefono, texto_cliente)
+            else:
+                respuesta = "Por ahora solo leo mensajes de texto. ¿Qué modelo de celular buscas?"
+            await enviar_whatsapp(telefono, respuesta)
+    except Exception as e:
+        print(f"Error webhook: {e}")
+    return {"status": "ok"}
